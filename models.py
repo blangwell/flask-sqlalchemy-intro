@@ -14,6 +14,8 @@ class User(db.Model):
     email = db.Column(db.String, nullable=False)
     bio = db.Column(db.String(150))
 
+    posts = db.relationship("Post", back_populates="author", lazy=True)
+
     def __repr__(self):
         return f"User(id={self.id}, email={self.email}, name={self.name}, bio={self.bio}"
 
@@ -24,3 +26,20 @@ class User(db.Model):
             "email": self.email,
             "bio": self.bio
         }
+
+class Post(db.Model):
+    __tablename__ = "posts"
+
+    id = db.Column(db.Integer, primary_key=True)
+    header = db.Column(db.String(150), unique=True, nullable=False)
+    body = db.Column(db.String, nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"))
+
+    author = db.relationship("User", back_populates="posts", lazy="subquery")
+
+    def __repr__(self):
+        return f"Post(id={self.id}, header={self.header}, body={self.body}, author_id={self.author_id}"
+
+    def as_dict(self):
+        return {cname: getattr(self.c.name) for c in self.__table__.columns}
+        
